@@ -65,7 +65,7 @@ jobs:
     - name: 【8/11】编译固件
       run: |
         cd $REPO_NAME
-        make V=s -j$(nproc) || make V=s
+        make -j$(nproc) || make 
 
     - name: 【9/11】打TAG
       run: | 
