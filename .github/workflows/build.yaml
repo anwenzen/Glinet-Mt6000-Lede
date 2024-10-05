@@ -1,0 +1,99 @@
+name: 构建MT6000固件
+
+on:
+  repository_dispatch:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 5 * * 0'
+
+env:
+  REPO_URL: https://github.com/coolsnowwolf/lede.git
+  REPO_NAME: lede
+  REPO_BRANCH: master
+  BUIlD_DEVIVE: glinet_gl-mt6000
+  CONFIG_FILE: .config
+  TZ: Europe/Berlin
+
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+
+    steps:
+    - name: 【1/11】签出
+      uses: actions/checkout@main
+
+    - name: 【2/11】安装依赖
+      run: |
+        sudo apt update -y
+        sudo apt full-upgrade -y
+        sudo apt install -y ack antlr3 asciidoc autoconf automake autopoint binutils bison build-essential \
+        bzip2 ccache cmake cpio curl device-tree-compiler fastjar flex gawk gettext gcc-multilib g++-multilib \
+        git gperf haveged help2man intltool libc6-dev-i386 libelf-dev libfuse-dev libglib2.0-dev libgmp3-dev \
+        libltdl-dev libmpc-dev libmpfr-dev libncurses5-dev libncursesw5-dev libpython3-dev libreadline-dev \
+        libssl-dev libtool lrzsz mkisofs msmtp ninja-build p7zip p7zip-full patch pkgconf python2.7 python3 \
+        python3-pyelftools python3-setuptools qemu-utils rsync scons squashfs-tools subversion swig texinfo \
+        uglifyjs upx-ucl unzip vim wget xmlto xxd zlib1g-dev
+
+    - name: 【3/11】下载源码
+      run: |
+        git clone --depth 1 --branch $REPO_BRANCH $REPO_URL
+
+    - name: 【4/11】增加feeds仓库
+      run:  |
+        cd lede
+        sed -i '2i src-git small https://github.com/kenzok8/small' feeds.conf.default
+        sed -i '1i src-git kenzo https://github.com/kenzok8/openwrt-packages' feeds.conf.default
+
+    - name: 【5/11】显示当前配置
+      run:  |
+        cp $GITHUB_WORKSPACE/$CONFIG_FILE $REPO_NAME/$CONFIG_FILE
+        cat $REPO_NAME/$CONFIG_FILE | grep -E "^[^#]"
+
+    - name: 【6/11】拉取/更新feeds
+      run: |
+        cd $REPO_NAME
+        ./scripts/feeds update -a
+        ./scripts/feeds install -a
+
+    - name: 【7/11】下载工具
+      run: |
+        cd $REPO_NAME
+        make defconfig
+        make download -j8
+
+    - name: 【8/11】编译固件
+      run: |
+        cd $REPO_NAME
+        make V=s -j$(nproc) || make V=s
+
+    - name: 【9/11】打TAG
+      run: | 
+        cd $REPO_NAME/bin/targets/mediatek/filogic
+        rm -rf packages
+        echo "FIRMWARE=$PWD" >> $GITHUB_ENV
+        echo "NOW=$(date +%F-%H%M)" >> $GITHUB_ENV
+        
+        cp $PWD/version.buildinfo $GITHUB_WORKSPACE/version.buildinfo
+        echo "BUILDINFO=$(cat $PWD/version.buildinfo)" >> $GITHUB_ENV
+        echo "RelTag=${{ env.NOW }}_Pre_${{ env.BUIlD_DEVIVE }}_@(${{ env.BUILDINFO }})" >> $GITHUB_ENV
+
+
+    - name: 【10/11】上传固件到GitHub
+      uses: actions/upload-artifact@main
+      with:
+        name: OpenWrt_firmware-${{ env.BUIlD_DEVIVE }}-${{ env.NOW }}
+        path: ${{ env.FIRMWARE }}
+
+    - name: 【11/11】创建RELEASE
+      uses: "marvinpinto/action-automatic-releases@latest"
+      with:
+        repo_token: "${{ secrets.GITHUB_TOKEN }}"
+        prerelease: True
+        title: "${{ env.RelTag }}"
+        automatic_release_tag: "${{ env.BUILDINFO }}"
+        files: |
+          ${{ env.FIRMWARE }}/*sysupgrade.bin
+          ${{ env.FIRMWARE }}/*.buildinfo
+          ${{ env.FIRMWARE }}/*.manifest
+          ${{ env.FIRMWARE }}/sha256sums
