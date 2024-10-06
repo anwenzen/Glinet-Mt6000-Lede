@@ -20,6 +20,9 @@ jobs:
     runs-on: ubuntu-22.04
 
     steps:
+    - name: Delete huge unnecessary tools folder
+      run: rm -rf /opt/hostedtoolcache
+      
     - name: 【1/11】签出
       uses: actions/checkout@main
 
