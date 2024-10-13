@@ -75,17 +75,17 @@ jobs:
         cd $REPO_NAME/bin/targets/mediatek/filogic
         rm -rf packages
         echo "FIRMWARE=$PWD" >> $GITHUB_ENV
-        echo "NOW=$(date +%F-%H%M)" >> $GITHUB_ENV
+        echo "NOW=$(date +%F") >> $GITHUB_ENV
         
         cp $PWD/version.buildinfo $GITHUB_WORKSPACE/version.buildinfo
         echo "BUILDINFO=$(cat $PWD/version.buildinfo)" >> $GITHUB_ENV
-        echo "RelTag=${{ env.NOW }}_Pre_${{ env.BUIlD_DEVIVE }}_@(${{ env.BUILDINFO }})" >> $GITHUB_ENV
+        echo "RelTag=${env.BUIlD_DEVIVE}_$(date +%F")_@($(cat $PWD/version.buildinfo))" >> $GITHUB_ENV
 
 
     - name: 【10/11】上传固件到GitHub
       uses: actions/upload-artifact@main
       with:
-        name: OpenWrt_firmware-${{ env.BUIlD_DEVIVE }}-${{ env.NOW }}
+        name: OpenWrt_firmware-${env.BUIlD_DEVIVE}-${env.NOW}
         path: ${{ env.FIRMWARE }}
 
     - name: 【11/11】创建RELEASE
