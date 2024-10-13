@@ -12,7 +12,7 @@ env:
   REPO_BRANCH: master
   BUIlD_DEVIVE: glinet_gl-mt6000
   CONFIG_FILE: .config
-  TZ: Europe/Berlin
+  TZ: EAsia/Shanghai
 
 
 jobs:
@@ -75,11 +75,11 @@ jobs:
         cd $REPO_NAME/bin/targets/mediatek/filogic
         rm -rf packages
         echo "FIRMWARE=$PWD" >> $GITHUB_ENV
-        echo "NOW=$(date +%F") >> $GITHUB_ENV
+        echo "NOW=$(date +%F)" >> $GITHUB_ENV
         
         cp $PWD/version.buildinfo $GITHUB_WORKSPACE/version.buildinfo
         echo "BUILDINFO=$(cat $PWD/version.buildinfo)" >> $GITHUB_ENV
-        echo "RelTag=${env.BUIlD_DEVIVE}_$(date +%F")_@($(cat $PWD/version.buildinfo))" >> $GITHUB_ENV
+        echo "RelTag=${env.BUIlD_DEVIVE}_$(date +%F)_@($(cat $PWD/version.buildinfo))" >> $GITHUB_ENV
 
 
     - name: 【10/11】上传固件到GitHub
