@@ -10,7 +10,7 @@ env:
   REPO_URL: https://github.com/coolsnowwolf/lede.git
   REPO_NAME: lede
   REPO_BRANCH: master
-  BUIlD_DEVIVE: glinet_gl-mt6000
+  BUIlD_DEVIVE: Flint 2 (GL-MT6000)
   CONFIG_FILE: .config
   TZ: EAsia/Shanghai
 
@@ -79,8 +79,6 @@ jobs:
         
         cp $PWD/version.buildinfo $GITHUB_WORKSPACE/version.buildinfo
         echo "BUILDINFO=$(cat $PWD/version.buildinfo)" >> $GITHUB_ENV
-        echo "RelTag=${env.BUIlD_DEVIVE}_$(date +%F)_@($(cat $PWD/version.buildinfo))" >> $GITHUB_ENV
-
 
     - name: 【10/11】上传固件到GitHub
       uses: actions/upload-artifact@main
@@ -93,7 +91,7 @@ jobs:
       with:
         repo_token: "${{ secrets.GITHUB_TOKEN }}"
         prerelease: True
-        title: "${{ env.RelTag }}"
+        title: "${{ env.BUIlD_DEVIVE }}_${{ env.NOW }}_${{ env.BUILDINFO }}"
         automatic_release_tag: "${{ env.BUILDINFO }}"
         files: |
           ${{ env.FIRMWARE }}/*sysupgrade.bin
