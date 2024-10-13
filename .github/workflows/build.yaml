@@ -85,7 +85,7 @@ jobs:
     - name: 【10/11】上传固件到GitHub
       uses: actions/upload-artifact@main
       with:
-        name: OpenWrt_firmware-${env.BUIlD_DEVIVE}-${env.NOW}
+        name: OpenWrt_firmware-${{ env.BUIlD_DEVIVE }}-${{ env.NOW }}
         path: ${{ env.FIRMWARE }}
 
     - name: 【11/11】创建RELEASE
