@@ -57,6 +57,7 @@ jobs:
         cd $REPO_NAME
         ./scripts/feeds update -a
         ./scripts/feeds install -a
+        make menuconfig
 
     - name: 【7/11】下载工具
       run: |
