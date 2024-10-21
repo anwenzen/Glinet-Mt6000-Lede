@@ -12,6 +12,7 @@ env:
   REPO_BRANCH: master
   BUIlD_DEVIVE: GL.iNet Flint 2 (GL-MT6000)
   CONFIG_FILE: .config
+  CLASH_META_URL: https://raw.githubusercontent.com/vernesong/OpenClash/core/master/meta/clash-linux-arm64.tar.gz
   TZ: EAsia/Shanghai
 
 jobs:
@@ -46,6 +47,9 @@ jobs:
         cd lede
         sed -i '2i src-git small https://github.com/kenzok8/small' feeds.conf.default
         sed -i '1i src-git kenzo https://github.com/kenzok8/openwrt-packages' feeds.conf.default
+        mkdir -p files/etc/openclash/core
+        wget -qO- $CLASH_META_URL | tar xOvz > files/etc/openclash/core/clash_meta
+        chmod +x files/etc/openclash/core/clash_meta
 
     - name: 【5/11】显示当前配置
       run:  |
